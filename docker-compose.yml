@@ -1,0 +1,27 @@
+# Local stack: Postgres for run history, Mosquitto for live telemetry.
+# Postgres is published on 55432 by default so it does not clash with a local install on 5432.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: lotline
+      POSTGRES_PASSWORD: lotline
+      POSTGRES_DB: lotline
+    ports:
+      - "${LOTLINE_PG_PORT:-55432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lotline -d lotline"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "${LOTLINE_MQTT_PORT:-1883}:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "healthcheck", "-m", "ok"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

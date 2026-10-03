@@ -6,10 +6,10 @@ A small, real project built to show how I'd approach a specific problem. It will
 Planning docs live in `.private/` (gitignored): `PRD.md` is the spec to build, `company.md` has context and the words to avoid. Read both before starting. Never copy anything from `.private/` into tracked files.
 
 ## Commands
-- Build: `[command]`
-- Test: `[command]`
-- Run the demo: `[command]`
-- Measure / regenerate results: `[command]`
+- Setup: `nvm use && corepack enable && pnpm install --frozen-lockfile && docker compose up -d --wait`
+- Typecheck: `pnpm typecheck`
+- Test: `pnpm test` (uses the compose Postgres on port 55432; set `DATABASE_URL` to override)
+- Web build: `pnpm web:build`
 
 ## How to work
 - Build milestone by milestone from `.private/PRD.md`. Don't skip acceptance checks.

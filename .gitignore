@@ -23,3 +23,7 @@ __pycache__/
 .DS_Store
 .env
 .env.*
+
+# Quick eval output (the committed numbers come from the full run)
+results/quick/
+test-results/
