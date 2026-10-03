@@ -1,7 +1,19 @@
 # Numbers
 
-Every number that appears in the README, the video or an email, and where it comes from.
+Every number that appears in the README, the GIF or an email, and where it comes from. Everything is simulated. All files below are written by `pnpm eval` (full run, about 3 minutes on an Apple Silicon MacBook, Node 22.22.2); two full runs give byte-identical files.
 
 | Number | What it measures | Single run or aggregate | Runs / seeds | Produced by | Raw output |
 |---|---|---|---|---|---|
-| | | | | `[script]` | `results/[file]` |
+| Median lead before the first out-of-spec wafer: hold 0, thickness trend 14, lotline 16 runs | Runs between a detector's first alarm (run 61 or later) and the first out-of-spec wafer, tc_drift at δ = 0.1, r = 4 | Aggregate: median over tools | 200 simulated tools (seeds 1-200), 260 runs each | `pnpm eval` | `results/detection.csv` (`lead_median`), `results/summary.md` |
+| Drifts flagged before the first out-of-spec wafer: 0%, 100%, 99% (chance 0%, 10%, 12%) | Share of tools with lead > 0; chance = same detector on the same tool with no drift, in the same window | Aggregate | 200 tools | `pnpm eval` | `results/detection.csv` (`lead_pos_pct`, `chance_pct`) |
+| False alarms per 1,000 in-control runs: hold 0.26 [0.19, 0.34], thickness trend 5.63 [4.81, 6.44], lotline 4.78 [4.20, 5.38] | Alarm episodes per monitored run, out of sample, 95% bootstrap CI over tools (2,000 resamples, fixed seed) | Aggregate: pooled rate | 200 tools x 1,000 monitored runs | `pnpm eval` | `results/false_alarms.csv` |
+| 99% first flag on the moving subsystem's chart | Share of lotline's first alarms (run 61 or later) that include the chart of the drifting subsystem, headline cell | Aggregate | 200 tools | `pnpm eval` | `results/detection.csv` (`affected_pct`) |
+| Break-even: run-to-run thickness σ 1.02% (r* = 4) at the headline cell; r* per cell | Smallest r on the grid 2, 2.5, ..., 8 from which lotline's median lead is strictly greater than the thickness trend's | Aggregate | 200 tools per r, trend recalibrated at each r | `pnpm eval` | `results/detection.csv` (rows for every r), `results/summary.md` |
+| Full results table (delay median and p90, % flagged before the first out-of-spec wafer, affected chart) | Same definitions, both scenarios x δ in {0.05, 0.1, 0.2} x r in {2, 4, 8} | Aggregate | 200 tools per cell | `pnpm eval` | `results/detection.csv`, `results/summary.md` |
+| Hold pressure-band false alarms: 58 per 1,000 runs at r = 2 | Hold alarms by source on in-control runs | Aggregate | 200 tools x 1,000 runs | `pnpm eval` | `results/false_alarms.csv` (`hold,pressure`) |
+| lotline vs thickness trend at r = 4: median 2 runs earlier, earlier in 58%, same run in 6% | A = trend alarm run - lotline flag run, headline cell | Aggregate | 200 tools | `pnpm eval` | `results/summary.md` (Other checks) |
+| Per-setpoint heater offsets: median 0.30 σ̂, p90 0.72 σ̂ | Range of a tool's per-setpoint mean heater index, in control | Aggregate over tools | 200 tools x 1,000 runs | `pnpm eval` | `results/summary.md` (Other checks) |
+| Calibrated limits: lotline L_e 3.3677, thickness trend L_e 4.2209 (r = 4) | Smallest EWMA limit with at most 5 false alarms per 1,000 runs per tool | Aggregate | 500 calibration tools (seeds 10001-10500) x 1,000 runs | `pnpm eval` | `src/domain/calibration.json`, `results/summary.md` |
+| GIF: flag at run 74, thickness trend alarm at run 76, first out-of-spec wafer at run 89 (15 runs after the flag) | The demo tool's first events, checked against the running app by `pnpm verify-demo` | Single tool (seed 125), chosen nearest the median lead | 1 tool, 120 runs | `pnpm eval` (pick), `pnpm demo` (app) | `results/demo.json` |
+| GIF: "heater_temp deposit mean within 0.01 °C of setpoint", tool alarms 0 | Max over the demo tool's runs of the deposit-mean temperature deviation (1.4e-3 °C), rounded up | Single tool | 120 runs | the app (`GET /api/tools/dep-1/health`) | checked by `pnpm check-ui` |
+| Eval runtime about 3 minutes | Wall time of a full `pnpm eval` | Single run | about 1.05 million simulated runs | `pnpm eval` | 159 s measured on the build machine |
