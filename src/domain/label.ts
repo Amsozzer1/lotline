@@ -44,3 +44,12 @@ export function lotlineLabel(inp: LabelInput): LabelOutput {
   const shading: [number, number] | null = b !== null && b > 0 ? [x, firstOosRun as number] : null;
   return { text, shading, ...markers };
 }
+
+/**
+ * The bound printed in "heater_temp deposit mean within D °C of setpoint": ceil(100 max) / 100,
+ * at least 0.01. Never rounds down, so the printed bound is always >= the measured max.
+ */
+export function tempBound(maxDev: number): string {
+  const d = Math.max(0.01, Math.ceil(maxDev * 100) / 100);
+  return d.toFixed(2);
+}

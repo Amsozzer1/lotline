@@ -80,3 +80,14 @@ describe("test 1: banner", () => {
     expect(lines[0]).toBe("Tool health: heater power 0.4% below expected for each run's setpoint over runs 55–58, within recipe version v7 (375 °C); flagged at run 58.");
   });
 });
+
+describe("temperature bound", () => {
+  it("never prints less than the measured max", async () => {
+    const { tempBound } = await import("../src/domain/label");
+    for (const x of [0, 0.0012, 0.0021, 0.01, 0.0100001, 0.03, 0.0749, 0.25, 1.234]) {
+      expect(Number(tempBound(x))).toBeGreaterThanOrEqual(x);
+      expect(Number(tempBound(x))).toBeGreaterThanOrEqual(0.01);
+    }
+    expect(tempBound(0.0021)).toBe("0.01");
+  });
+});

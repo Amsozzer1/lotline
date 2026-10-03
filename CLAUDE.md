@@ -11,6 +11,7 @@ Planning docs live in `.private/` (gitignored): `PRD.md` is the spec to build, `
 - Test: `pnpm test` (uses the compose Postgres on port 55432; set `DATABASE_URL` to override)
 - Web build: `pnpm web:build`
 - Run the demo: `pnpm demo` (resets the database, backfills the tools in `results/demo.json`, serves http://localhost:8787). Then `pnpm verify-demo` in a second shell checks the app against `results/demo.json`.
+- UI checks (with the demo running): `pnpm check-ui` (alignment of the strip and both charts, markers, the printed bound, one click to the run page).
 - Serve without resetting: `pnpm dev`. UI development with hot reload: `pnpm web:dev` (proxies `/api` to port 8787).
 - Measure / regenerate results: `pnpm eval` (about 3 min; writes `results/` and `src/domain/calibration.json`). `pnpm eval --quick` writes only `results/quick/`.
 

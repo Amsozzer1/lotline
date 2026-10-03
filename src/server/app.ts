@@ -28,6 +28,8 @@ export interface AppDeps {
   detectors: DetectorConfig;
   webDist: string;
   mqttStatus: () => string;
+  /** Tools whose simulated scenario injects a drift, and the run it starts on (for the chart's onset line). */
+  driftStart: (toolId: string) => number | null;
 }
 
 export function buildApp(deps: AppDeps): FastifyInstance {
@@ -58,7 +60,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   app.get<{ Params: { id: string } }>("/api/tools/:id/health", async (req, reply) => {
     const runs = await loadToolRuns(deps.pool, req.params.id);
     if (runs.length === 0) return reply.code(404).send({ error: "unknown tool or no finished runs" });
-    reply.type("application/json").send(send(toolHealth(runs, deps.detectors)));
+    reply.type("application/json").send(send({ ...toolHealth(runs, deps.detectors), simulatedDriftStart: deps.driftStart(req.params.id) }));
   });
 
   app.get<{ Params: { id: string } }>("/api/runs/:id", async (req, reply) => {
