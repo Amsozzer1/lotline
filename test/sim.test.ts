@@ -6,7 +6,7 @@ import { simulateRun } from "../src/domain/sim";
 import { SETPOINTS } from "../src/domain/params";
 
 // SHA-256 of seed 7, tool 1, runs 1-3 (scenario none), generated under the pinned Node on arm64.
-const GOLDEN = "69d3c717d42d9163237f1ea49c9c00ffb60903f38aa4e50a48114581629664ea";
+const GOLDEN = "06a4653aaea1a735f8e80eeb9459753c570c160a897c6b5cee995bbfc8d82daa";
 
 function framesHash(seed: number, toolId: number, nRuns: number): string {
   const h = createHash("sha256");

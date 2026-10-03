@@ -1,4 +1,6 @@
-/** Seeded, platform-independent randomness: integer hashing, sfc32 and Box-Muller normals. */
+import { flog } from "./fmath";
+
+/** Seeded, platform-independent randomness: integer hashing, sfc32 and polar-method normals. */
 
 function mix32(x: number): number {
   let h = x >>> 0;
@@ -64,16 +66,23 @@ export class Rng {
     return lo + Math.floor(this.uniform() * (hi - lo + 1));
   }
 
-  /** Standard normal (Box-Muller, caching the second value). */
+  /** Standard normal (Marsaglia polar method, caching the second value; uses only log and sqrt). */
   normal(): number {
     if (this.hasSpare) {
       this.hasSpare = false;
       return this.spare;
     }
-    const r = Math.sqrt(-2 * Math.log(this.uniform()));
-    const th = 2 * Math.PI * this.uniform();
-    this.spare = r * Math.sin(th);
+    let u: number;
+    let v: number;
+    let s: number;
+    do {
+      u = 2 * this.uniform() - 1;
+      v = 2 * this.uniform() - 1;
+      s = u * u + v * v;
+    } while (s >= 1 || s === 0);
+    const m = Math.sqrt((-2 * flog(s)) / s);
+    this.spare = v * m;
     this.hasSpare = true;
-    return r * Math.cos(th);
+    return u * m;
   }
 }

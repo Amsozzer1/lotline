@@ -1,4 +1,5 @@
 import { RunAccumulator } from "./accumulator";
+import { fexp } from "./fmath";
 import {
   DT_S,
   EA_EV,
@@ -85,7 +86,7 @@ const ARR_K = EA_EV / K_B;
 const INV_T0 = 1 / (T0 + KELVIN);
 
 function arrhenius(tC: number): number {
-  return Math.exp(-ARR_K * (1 / (tC + KELVIN) - INV_T0));
+  return fexp(-ARR_K * (1 / (tC + KELVIN) - INV_T0));
 }
 
 /** Predicted thickness at the recipe's setpoints with no faults (the flow exponent is 1). */
@@ -187,12 +188,12 @@ export function simulateRun(inp: SimInput, opts: SimOptions = {}): SimResult {
       if (uRaw > 0 && uRaw < pMax) integ += kiDt * e;
       let p: number;
       if (s === pumpdownIdx) {
-        p = pBase + pumpAmp * Math.exp(-tStep / pumpTau);
+        p = pBase + pumpAmp * fexp(-tStep / pumpTau);
       } else if (qSet > 0) {
         p = pBase + k * qDel;
         pLast = p;
       } else {
-        p = pBase + (pLast - pBase) * Math.exp(-tStep / pumpTau);
+        p = pBase + (pLast - pBase) * fexp(-tStep / pumpTau);
       }
       const pressure = p + (noisy ? nPressure * rng.normal() : 0);
       const flow = qSet + (noisy ? nFlow * rng.normal() : 0);
