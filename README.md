@@ -112,7 +112,7 @@ pnpm demo                     # backfills two tools and serves http://localhost:
 # in a second shell
 pnpm verify-demo              # the app reproduces results/demo.json
 pnpm test                     # uses its own database, lotline_test
-pnpm eval                     # about 3 minutes; regenerates results/ byte for byte
+pnpm eval                     # 3 to 4 minutes; regenerates results/ byte for byte
 ```
 
 **Watch live ingest.** With the demo running, `pnpm sim --tool dep-2 --speed 20` streams the healthy tool's next run live. Its chip shows "running step N", and the run joins its history and chart.

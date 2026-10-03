@@ -1,6 +1,6 @@
 # Numbers
 
-Every number that appears in the README, the GIF or an email, and where it comes from. Everything is simulated. All files below are written by `pnpm eval` (full run, about 3 minutes on an Apple Silicon MacBook, Node 22.22.2); two full runs give byte-identical files.
+Every number that appears in the README, the GIF or an email, and where it comes from. Everything is simulated. All files below are written by `pnpm eval` (full run, 3 to 4 minutes on an Apple Silicon MacBook, Node 22.22.2); two full runs give byte-identical files.
 
 | Number | What it measures | Single run or aggregate | Runs / seeds | Produced by | Raw output |
 |---|---|---|---|---|---|
@@ -16,4 +16,4 @@ Every number that appears in the README, the GIF or an email, and where it comes
 | Calibrated limits: lotline L_e 3.3677, thickness trend L_e 4.2209 (r = 4) | Smallest EWMA limit with at most 5 false alarms per 1,000 runs per tool | Aggregate | 500 calibration tools (seeds 10001-10500) x 1,000 runs | `pnpm eval` | `src/domain/calibration.json`, `results/summary.md` |
 | GIF: flag at run 74, thickness trend alarm at run 76, first out-of-spec wafer at run 89 (15 runs after the flag) | The demo tool's first events, checked against the running app by `pnpm verify-demo` | Single tool (seed 125), chosen nearest the median lead | 1 tool, 120 runs | `pnpm eval` (pick), `pnpm demo` (app) | `results/demo.json` |
 | GIF: "heater_temp deposit mean within 0.01 °C of setpoint", tool alarms 0 | Max over the demo tool's runs of the deposit-mean temperature deviation (1.4e-3 °C), rounded up | Single tool | 120 runs | the app (`GET /api/tools/dep-1/health`) | checked by `pnpm check-ui` |
-| Eval runtime about 3 minutes | Wall time of a full `pnpm eval` | Single run | about 1.05 million simulated runs | `pnpm eval` | 159 s measured on the build machine |
+| Eval runtime 3 to 4 minutes | Wall time of a full `pnpm eval` | Single runs | about 1.05 million simulated runs | `pnpm eval` | 159 s alone, 256 s with the demo server running (clean-clone check), Apple Silicon MacBook |
