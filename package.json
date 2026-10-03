@@ -20,7 +20,9 @@
     "dev": "tsx src/server/serve.ts",
     "verify-demo": "tsx scripts/verify-demo.ts",
     "check-ui": "tsx scripts/check-ui.ts",
-    "record-gif": "tsx scripts/record-gif.ts"
+    "record-gif": "tsx scripts/record-gif.ts",
+    "sim": "tsx src/sim/cli.ts",
+    "check-live": "tsx scripts/check-live.ts"
   },
   "dependencies": {
     "fastify": "^5.12.5",

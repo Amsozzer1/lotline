@@ -13,6 +13,7 @@ Planning docs live in `.private/` (gitignored): `PRD.md` is the spec to build, `
 - Run the demo: `pnpm demo` (resets the database, backfills the tools in `results/demo.json`, serves http://localhost:8787). Then `pnpm verify-demo` in a second shell checks the app against `results/demo.json`.
 - UI checks (with the demo running): `pnpm check-ui` (alignment of the strip and both charts, markers, the printed bound, one click to the run page).
 - Record the GIF (with the demo running, after `pnpm verify-demo`): `pnpm record-gif` writes `docs/demo.gif` (needs ffmpeg).
+- Live ingest (with the demo running): `pnpm sim --tool dep-2 --speed 20` streams that tool's next run over MQTT. `pnpm check-live` runs it twice and checks frames, features, chips and pages.
 - Serve without resetting: `pnpm dev`. UI development with hot reload: `pnpm web:dev` (proxies `/api` to port 8787).
 - Measure / regenerate results: `pnpm eval` (about 3 min; writes `results/` and `src/domain/calibration.json`). `pnpm eval --quick` writes only `results/quick/`.
 

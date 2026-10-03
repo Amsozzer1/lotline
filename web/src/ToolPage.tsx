@@ -109,9 +109,11 @@ const xAxis = (n: number, hide: boolean, ticks: number[]) => (
 export function ToolPage({ id }: { id: string }) {
   const [h, setH] = useState<Health | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [runCount, setRunCount] = useState<number | null>(null);
+  // Refetch when a live run lands (the chips poll the run count).
   useEffect(() => {
     getJson<Health>(`/api/tools/${id}/health`).then(setH, (e) => setErr(String(e)));
-  }, [id]);
+  }, [id, runCount]);
 
   const view = useMemo(() => {
     if (!h) return null;
@@ -184,7 +186,7 @@ export function ToolPage({ id }: { id: string }) {
 
   return (
     <>
-      <Chips active={id} />
+      <Chips active={id} onTools={(ts) => setRunCount(ts.find((t) => t.id === id)?.runCount ?? null)} />
       <div className="card">
         <h1>
           {id.toUpperCase()} <span className="muted">· {n} runs · {h.versions.length} recipe versions</span>
