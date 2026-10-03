@@ -1,0 +1,26 @@
+{
+  "delta": 0.1,
+  "r": 4,
+  "s": 61,
+  "nRuns": 120,
+  "tools": [
+    {
+      "displayId": "dep-1",
+      "seed": 125,
+      "simToolId": 1,
+      "scenario": "tc_drift",
+      "flagRun": 74,
+      "trendRun": 76,
+      "firstOosRun": 89
+    },
+    {
+      "displayId": "dep-2",
+      "seed": 1,
+      "simToolId": 1,
+      "scenario": "none",
+      "flagRun": null,
+      "trendRun": null,
+      "firstOosRun": null
+    }
+  ]
+}
