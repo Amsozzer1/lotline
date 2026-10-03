@@ -19,7 +19,8 @@
     "demo": "vite build && tsx src/server/demo.ts",
     "dev": "tsx src/server/serve.ts",
     "verify-demo": "tsx scripts/verify-demo.ts",
-    "check-ui": "tsx scripts/check-ui.ts"
+    "check-ui": "tsx scripts/check-ui.ts",
+    "record-gif": "tsx scripts/record-gif.ts"
   },
   "dependencies": {
     "fastify": "^5.12.5",
