@@ -83,6 +83,8 @@ export interface SimResult {
 }
 
 const ARR_K = EA_EV / K_B;
+// exp(-t / tau) at each tick of the pumpdown and purge steps, computed once (same values as inline).
+const DECAY = Array.from({ length: 1000 }, (_, i) => fexp(-(i * DT_S) / PUMPDOWN_TAU_S));
 const INV_T0 = 1 / (T0 + KELVIN);
 
 function arrhenius(tC: number): number {
@@ -152,7 +154,6 @@ export function simulateRun(inp: SimInput, opts: SimOptions = {}): SimResult {
   const nPressure = noisy ? NOISE_PRESSURE : 0;
   const nFlow = noisy ? NOISE_FLOW : 0;
   const pumpAmp = PUMPDOWN_AMPLITUDE;
-  const pumpTau = PUMPDOWN_TAU_S;
   const tickMs = TICK_MS;
   const dt = DT_S;
   const r0 = R0_NM_S;
@@ -178,7 +179,6 @@ export function simulateRun(inp: SimInput, opts: SimOptions = {}): SimResult {
     const qDel = qSet * (1 + g);
     for (let i = 0; i < ticks; i++) {
       const tMs = start + i * tickMs;
-      const tStep = i * dt;
       // Readings
       const temp = T + bTc + (noisy ? nTemp * rng.normal() : 0);
       // PI on the reading, with conditional integration (no windup while saturated)
@@ -188,12 +188,12 @@ export function simulateRun(inp: SimInput, opts: SimOptions = {}): SimResult {
       if (uRaw > 0 && uRaw < pMax) integ += kiDt * e;
       let p: number;
       if (s === pumpdownIdx) {
-        p = pBase + pumpAmp * fexp(-tStep / pumpTau);
+        p = pBase + pumpAmp * DECAY[i];
       } else if (qSet > 0) {
         p = pBase + k * qDel;
         pLast = p;
       } else {
-        p = pBase + (pLast - pBase) * fexp(-tStep / pumpTau);
+        p = pBase + (pLast - pBase) * DECAY[i];
       }
       const pressure = p + (noisy ? nPressure * rng.normal() : 0);
       const flow = qSet + (noisy ? nFlow * rng.normal() : 0);
