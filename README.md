@@ -1,5 +1,7 @@
 # lotline
 
+By [Ahmed Sozzer](https://amsozzer.com) · [github.com/Amsozzer1](https://github.com/Amsozzer1)
+
 A run-history and tool-health app for simulated chip-processing tools. Everything here is simulated.
 
 A deposition tool runs a recipe that gets edited every few runs, and a wafer comes out thin. Was it the recipe edit or the tool? Thickness on its own can't say, because every new recipe version is a fresh prediction with its own error. The tool's readings can't say either: the heater loop holds the temperature reading on setpoint, so a drifting thermocouple shows up only in how much power the loop needs, and in the film. lotline keeps each run's traces, recipe version and metrology together, and charts heater power and chamber pressure against what each run's recipe should need, pooled across recipe versions. That way it can say which subsystem moved while the recipe kept changing.
