@@ -18,3 +18,15 @@ Why each decision was made, what was tried and dropped, and what the numbers cha
 ## 4. Parameters were not tuned
 **Chose:** the T step (check the headline cell, adjust only within stated constraints, freeze) made no changes. The pinned plant and loop values passed every settling test, and the headline cell came out close to the pre-build estimate.
 **Because:** tuning until the new method wins is how a result like this gets rigged. The numbers in `results/` are reported as they came out, including where the thickness trend does as well or better.
+
+## 5. Plain SQL instead of a query builder
+**Chose:** node-postgres with a handful of SQL statements, and COPY (pg-copy-streams) for frames.
+**Because:** the schema has ten tables and the server has four read queries. A typed query builder added a dependency and no safety the tests do not already give.
+
+## 6. Detectors run on read
+**Chose:** the server stores runs, frames, step summaries, run features and metrology, and computes every detector when a page asks for it, with the same functions the eval uses.
+**Because:** there is no detector state to lose on restart or to replay after a duplicate message, and the parity test can compare the app and the eval directly. A tool has a few hundred runs, so this costs milliseconds.
+
+## 7. API under /api
+**Chose:** the JSON API lives under `/api/...` and the single-page app owns `/tools/:id` and `/runs/:id`.
+**Because:** the page routes and the data routes would otherwise share paths.

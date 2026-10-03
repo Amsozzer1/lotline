@@ -15,11 +15,13 @@
     "web:build": "vite build",
     "web:dev": "vite",
     "db:reset": "tsx scripts/db-reset.ts",
-    "eval": "tsx src/eval/index.ts"
+    "eval": "tsx src/eval/index.ts",
+    "demo": "vite build && tsx src/server/demo.ts",
+    "dev": "tsx src/server/serve.ts",
+    "verify-demo": "tsx scripts/verify-demo.ts"
   },
   "dependencies": {
     "fastify": "^5.12.5",
-    "kysely": "^0.29.6",
     "mqtt": "^5.16.0",
     "pg": "^8.23.1",
     "pg-copy-streams": "^7.0.0",

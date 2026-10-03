@@ -1,6 +1,7 @@
 import { FA_TARGET, L1, LAMBDA, PHASE_I_RUNS } from "./params";
 
 export const EWMA_FACTOR = Math.sqrt(LAMBDA / (2 - LAMBDA));
+export const L1_LIMIT = L1;
 export const MONITOR_FROM_RUN = PHASE_I_RUNS + 1;
 
 export interface FamilyAlarm {
