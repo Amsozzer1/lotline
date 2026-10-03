@@ -3,6 +3,7 @@
  * - the flag at run X sits on the same pixel column in the version strip and both charts
  * - the shaded band spans X to the first out-of-spec wafer; the trend marker sits at its run
  * - the printed temperature bound is >= the API's raw maximum
+ * - hovering the flag shows that run in both tooltips
  * - one click on the flag opens that run's page, with the banner
  */
 import { readFileSync } from "node:fs";
@@ -68,6 +69,12 @@ const bound = Number(generated.match(/within ([0-9.]+) °C/)![1]);
 check(bound >= health.maxTempDev, `printed bound ${bound} °C >= raw max ${health.maxTempDev.toExponential(3)} °C`);
 const label = await page.getByTestId("generated-label").innerText();
 check(label === health.label.text, `label text matches the API: "${label}"`);
+
+// Hovering the flag shows that run in both charts' tooltips (synced by run)
+await page.getByTestId("lotline-flag").hover();
+await page.waitForTimeout(300);
+const tips = await page.locator(".tooltip").allInnerTexts();
+check(tips.length === 2 && tips.every((t) => t.startsWith(`Run ${tool.flagRun} `)), `hover on the flag: both tooltips show run ${tool.flagRun} (${tips.map((t) => t.split("\n")[0]).join(" | ")})`);
 
 await page.getByTestId("lotline-flag").click();
 await page.waitForSelector("[data-testid=banner]");

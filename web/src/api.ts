@@ -71,3 +71,20 @@ export async function getJson<T>(url: string): Promise<T> {
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return (await res.json()) as T;
 }
+
+const runRequests = new Map<string, Promise<RunHistory>>();
+/** Runs already loaded, so a page opened from a prefetched link renders without a loading state. */
+export const loadedRuns = new Map<string, RunHistory>();
+
+export function fetchRun(id: string): Promise<RunHistory> {
+  let p = runRequests.get(id);
+  if (!p) {
+    p = getJson<RunHistory>(`/api/runs/${id}`).then((r) => {
+      loadedRuns.set(id, r);
+      return r;
+    });
+    p.catch(() => runRequests.delete(id));
+    runRequests.set(id, p);
+  }
+  return p;
+}

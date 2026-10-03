@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ComposedChart, Line, ReferenceLine, Tooltip, XAxis, YAxis } from "recharts";
-import { getJson, type RunHistory } from "./api";
+import { fetchRun, loadedRuns, type RunHistory } from "./api";
 import { Chips } from "./Chips";
 import { Link } from "./router";
 import { MARGIN, WIDTH, Y_W } from "./ToolPage";
@@ -25,10 +25,10 @@ function Trace({ data, dataKey, title, unit, steps }: { data: { t: number }[]; d
 }
 
 export function RunPage({ id }: { id: string }) {
-  const [h, setH] = useState<RunHistory | null>(null);
+  const [h, setH] = useState<RunHistory | null>(() => loadedRuns.get(id) ?? null);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    getJson<RunHistory>(`/api/runs/${id}`).then(setH, (e) => setErr(String(e)));
+    fetchRun(id).then(setH, (e) => setErr(String(e)));
   }, [id]);
   const traces = useMemo(() => {
     if (!h) return null;

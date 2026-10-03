@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { tempBound } from "../../src/domain/label";
-import { getJson, type Health } from "./api";
+import { fetchRun, getJson, type Health } from "./api";
 import { Chips } from "./Chips";
 import { navigate } from "./router";
 
@@ -27,9 +27,10 @@ const xPx = (axisValue: number, n: number) => PLOT_LEFT + ((axisValue - 0.5) / n
 
 /** A single labelled marker (circle or diamond) with a surface-coloured halo behind the text. */
 function marker(kind: "circle" | "diamond", fill: string, text: string, below: boolean, testId?: string) {
-  return function Shape(p: { cx?: number; cy?: number }) {
-    const cx = p.cx ?? 0;
-    const cy = p.cy ?? 0;
+  return function Shape(p: { cx?: number; cy?: number; payload?: Record<string, unknown>; dataKey?: string }) {
+    if (p.cx === undefined || p.cy === undefined || !Number.isFinite(p.cx) || !Number.isFinite(p.cy)) return <g />;
+    const cx = p.cx;
+    const cy = p.cy;
     const ty = below ? cy + 24 : cy - 16;
     return (
       <g data-testid={testId} style={{ cursor: "pointer" }}>
@@ -43,6 +44,13 @@ function marker(kind: "circle" | "diamond", fill: string, text: string, below: b
         </text>
       </g>
     );
+  };
+}
+
+function dot(r: number, fill: string, ring = false) {
+  return function Dot(p: { cx?: number; cy?: number }) {
+    if (p.cx === undefined || p.cy === undefined || !Number.isFinite(p.cx) || !Number.isFinite(p.cy)) return <g />;
+    return <circle cx={p.cx} cy={p.cy} r={r} fill={fill} stroke={ring ? "var(--surface-1)" : undefined} strokeWidth={ring ? 1.5 : undefined} />;
   };
 }
 
@@ -64,6 +72,11 @@ interface Row {
   thk: number | null;
   idx: number | null;
   ewma: number | null;
+  /** Marker series: a value only on the run they mark, null elsewhere (one row per run keeps tooltips aligned). */
+  thkOos: number | null;
+  trendMark: number | null;
+  oosMark: number | null;
+  flagMark: number | null;
 }
 
 function RunTooltip({ active, payload }: { active?: boolean; payload?: { payload: Row }[] }) {
@@ -114,7 +127,15 @@ export function ToolPage({ id }: { id: string }) {
       thk: pct(h.index ? h.index.thickness[i] : r.thickness / r.target - 1),
       idx: pct(h.index?.[key][i]),
       ewma: pct(h.ewma?.[key][i]),
+      thkOos: null,
+      trendMark: null,
+      oosMark: null,
+      flagMark: null,
     }));
+    for (const r of rows) if (h.oosRuns.includes(r.run)) r.thkOos = r.thk;
+    if (h.firsts.trendRun) rows[h.firsts.trendRun - 1].trendMark = rows[h.firsts.trendRun - 1].thk;
+    if (h.firsts.firstOosRun) rows[h.firsts.firstOosRun - 1].oosMark = rows[h.firsts.firstOosRun - 1].thk;
+    if (h.firsts.flagRun) rows[h.firsts.flagRun - 1].flagMark = rows[h.firsts.flagRun - 1].idx;
     const ticks: number[] = [];
     for (let t = 10; t <= n; t += 10) ticks.push(t);
     const spec = h.rows[0].specHw * 100;
@@ -142,12 +163,16 @@ export function ToolPage({ id }: { id: string }) {
     return { n, key, rows, ticks, spec, thkTicks: niceTicks(thkMax), idxTicks: niceTicks(idxMax), lim, flag, flagRow, stripLabel };
   }, [h]);
 
+  // Prefetch the flagged run so the click opens its page without a loading state.
+  useEffect(() => {
+    if (view?.flagRow) fetchRun(view.flagRow.runId).catch(() => undefined);
+  }, [view]);
+
   if (err) return <p className="muted">{err}</p>;
   if (!h || !view) return <p className="muted">Loading…</p>;
   const { n, rows, ticks, spec, thkTicks, idxTicks, lim, flag, flagRow, stripLabel } = view;
   const trendRow = h.firsts.trendRun ? rows[h.firsts.trendRun - 1] : null;
   const oosRow = h.firsts.firstOosRun ? rows[h.firsts.firstOosRun - 1] : null;
-  const oosPoints = rows.filter((r) => h.oosRuns.includes(r.run));
   const open = (p: { payload?: Row } | Row) => {
     const row = "payload" in p && p.payload ? p.payload : (p as Row);
     if (row?.runId) navigate(`/runs/${row.runId}`);
@@ -209,18 +234,12 @@ export function ToolPage({ id }: { id: string }) {
           <ReferenceLine y={spec} stroke="var(--text-muted)" strokeWidth={1} label={{ value: "spec", position: "insideTopRight", fontSize: 11, fill: "var(--text-muted)" }} />
           <ReferenceLine y={-spec} stroke="var(--text-muted)" strokeWidth={1} />
           {onset}
-          <Tooltip content={<RunTooltip />} cursor={{ stroke: "var(--rule)" }} />
+          <Tooltip content={<RunTooltip />} cursor={{ stroke: "var(--rule)" }} position={{ x: PLOT_LEFT + 8, y: 2 }} isAnimationActive={false} />
           {flag && <ReferenceLine x={flag} stroke="var(--series-1-dark)" strokeOpacity={0.35} />}
-          <Scatter dataKey="thk" fill="var(--text-muted)" isAnimationActive={false} shape={(p: { cx?: number; cy?: number }) => <circle cx={p.cx} cy={p.cy} r={3} fill="var(--text-muted)" />} onClick={open} />
-          {oosPoints.length > 0 && (
-            <Scatter data={oosPoints} dataKey="thk" isAnimationActive={false} shape={(p: { cx?: number; cy?: number }) => <circle cx={p.cx} cy={p.cy} r={4} fill="var(--critical)" stroke="var(--surface-1)" strokeWidth={1.5} />} onClick={open} />
-          )}
-          {trendRow && trendRow.thk !== null && (
-            <Scatter data={[trendRow]} dataKey="thk" isAnimationActive={false} onClick={open} shape={marker("circle", "var(--series-2)", `thickness trend alarm · run ${trendRow.run}`, false, "trend-marker")} />
-          )}
-          {oosRow && oosRow.thk !== null && (
-            <Scatter data={[oosRow]} dataKey="thk" isAnimationActive={false} onClick={open} shape={marker("circle", "var(--critical)", `first out-of-spec wafer · run ${oosRow.run}`, oosRow.thk < 0, "oos-marker")} />
-          )}
+          <Scatter dataKey="thk" isAnimationActive={false} shape={dot(3, "var(--text-muted)")} onClick={open} />
+          <Scatter dataKey="thkOos" isAnimationActive={false} shape={dot(4, "var(--critical)", true)} onClick={open} />
+          <Scatter dataKey="trendMark" isAnimationActive={false} onClick={open} shape={marker("circle", "var(--series-2)", `thickness trend alarm · run ${trendRow?.run}`, false, "trend-marker")} />
+          <Scatter dataKey="oosMark" isAnimationActive={false} onClick={open} shape={marker("circle", "var(--critical)", `first out-of-spec wafer · run ${oosRow?.run}`, (oosRow?.thk ?? 0) < 0, "oos-marker")} />
         </ComposedChart>
 
         <div className="chart-title">
@@ -242,13 +261,11 @@ export function ToolPage({ id }: { id: string }) {
             <ReferenceLine segment={[{ x: h.phaseIRuns + 0.5, y: lim }, { x: n + 0.5, y: lim }]} stroke="var(--text-secondary)" strokeDasharray="5 4" />
             <ReferenceLine segment={[{ x: h.phaseIRuns + 0.5, y: -lim }, { x: n + 0.5, y: -lim }]} stroke="var(--text-secondary)" strokeDasharray="5 4" />
             {onset}
-            <Tooltip content={<RunTooltip />} cursor={{ stroke: "var(--rule)" }} />
-            <Scatter dataKey="idx" isAnimationActive={false} shape={(p: { cx?: number; cy?: number }) => <circle cx={p.cx} cy={p.cy} r={3} fill="var(--series-1-faint)" />} onClick={open} />
-            <Line dataKey="ewma" stroke="var(--series-1)" strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
+            <Tooltip content={<RunTooltip />} cursor={{ stroke: "var(--rule)" }} position={{ x: PLOT_LEFT + 8, y: 2 }} isAnimationActive={false} />
+            <Scatter dataKey="idx" isAnimationActive={false} shape={dot(3, "var(--series-1-faint)")} onClick={open} />
+            <Line dataKey="ewma" stroke="var(--series-1)" strokeWidth={2} dot={false} activeDot={false} connectNulls={false} isAnimationActive={false} />
             {flag && <ReferenceLine x={flag} stroke="var(--series-1-dark)" strokeOpacity={0.35} />}
-            {flagRow && flagRow.idx !== null && (
-              <Scatter data={[flagRow]} dataKey="idx" isAnimationActive={false} onClick={open} shape={marker("diamond", "var(--series-1-dark)", `lotline flag · run ${flag}`, false, "lotline-flag")} />
-            )}
+            <Scatter dataKey="flagMark" isAnimationActive={false} onClick={open} shape={marker("diamond", "var(--series-1-dark)", `lotline flag · run ${flag}`, false, "lotline-flag")} />
           </ComposedChart>
         ) : (
           <p className="muted">Phase I: {n} of {h.phaseIRuns} runs. Limits are set once Phase I is complete.</p>
