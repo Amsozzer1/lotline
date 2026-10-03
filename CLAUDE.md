@@ -10,6 +10,7 @@ Planning docs live in `.private/` (gitignored): `PRD.md` is the spec to build, `
 - Typecheck: `pnpm typecheck`
 - Test: `pnpm test` (uses the compose Postgres on port 55432; set `DATABASE_URL` to override)
 - Web build: `pnpm web:build`
+- Measure / regenerate results: `pnpm eval` (about 3 min; writes `results/` and `src/domain/calibration.json`). `pnpm eval --quick` writes only `results/quick/`.
 
 ## How to work
 - Build milestone by milestone from `.private/PRD.md`. Don't skip acceptance checks.

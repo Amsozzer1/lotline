@@ -14,7 +14,8 @@
     "test": "vitest run --passWithNoTests",
     "web:build": "vite build",
     "web:dev": "vite",
-    "db:reset": "tsx scripts/db-reset.ts"
+    "db:reset": "tsx scripts/db-reset.ts",
+    "eval": "tsx src/eval/index.ts"
   },
   "dependencies": {
     "fastify": "^5.12.5",
