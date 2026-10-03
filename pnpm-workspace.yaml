@@ -1,2 +1,3 @@
+# esbuild (used by tsx and vitest) runs a postinstall that checks its platform binary.
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
